@@ -83,7 +83,7 @@ class HomebridgeAccessory {
     try {
       const { propertyName, onData, offData, setValuePromise, ignorePreviousValue } = props;
       const { config, host, log, name } = this;
-      const { resendDataAfterReload } = config;
+      const { resendDataAfterReload, allowResend } = config;
 
       const capitalizedPropertyName = propertyName.charAt(0).toUpperCase() + propertyName.slice(1);
       log(`${name} set${capitalizedPropertyName}: ${value}`);
@@ -99,11 +99,13 @@ class HomebridgeAccessory {
       }
 
       if (!ignorePreviousValue && this.state[propertyName] == value && !this.isReloadingState) {
-        log(`${name} set${capitalizedPropertyName}: already ${value}`);
+        if (!allowResend) {
+          log(`${name} set${capitalizedPropertyName}: already ${value}`);
 
-        callback(null, value);
+          callback(null, value);
 
-        return;
+          return;
+        }
       }
 
       const previousValue = this.state[propertyName];
