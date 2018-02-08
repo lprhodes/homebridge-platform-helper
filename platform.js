@@ -19,13 +19,14 @@ class HomebridgePlatform {
   };
 
   accessories (callback) {
-    const { config, name, log } = this;
+    const { config, log } = this;
+    const { name } = config;
 
     const accessories = [];
 
     // Check for no accessories
     if (!config.accessories || config.accessories.length === 0) {
-      log(`No accessories have been added to the ${name} config.`);
+      log(`No accessories have been added to the "${name}" config.`);
       return callback(accessories);
     }
 
