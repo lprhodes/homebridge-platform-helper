@@ -79,19 +79,20 @@ class HomebridgeAccessory {
     throw new Error('The "performSetValueAction" method must be overridden.')
   }
 
-  async setCharacteristicValue (props, value, callback) {
+  async setCharacteristicValue (props, value, callback) {    
     try {
-      const { propertyName, onData, offData, setValuePromise, ignorePreviousValue } = props;
-      const { config, host, log, name } = this;
+      const { service, propertyName, onData, offData, setValuePromise, ignorePreviousValue } = props;
+      const { config, host, log, name } = this; 
       const { resendDataAfterReload, allowResend } = config;
 
       const capitalizedPropertyName = propertyName.charAt(0).toUpperCase() + propertyName.slice(1);
+
       log(`${name} set${capitalizedPropertyName}: ${value}`);
 
       if (this.isReloadingState && !resendDataAfterReload) {
         this.state[propertyName] = value;
 
-        log(`${name} set${capitalizedPropertyName}: already ${value} (no data sent)`);
+        log(`${name} set${capitalizedPropertyName}: already ${value} (no data sent - A)`);
 
         callback(null, value);
 
@@ -100,7 +101,7 @@ class HomebridgeAccessory {
 
       if (!ignorePreviousValue && this.state[propertyName] == value && !this.isReloadingState) {
         if (!allowResend) {
-          log(`${name} set${capitalizedPropertyName}: already ${value} (no data sent)`);
+          log(`${name} set${capitalizedPropertyName}: already ${value} (no data sent - B)`);
 
           callback(null, value);
 
@@ -115,7 +116,9 @@ class HomebridgeAccessory {
       const data = value ? onData : offData;
 
       if (setValuePromise) {
+
         await setValuePromise(data, previousValue);
+
       } else if (data) {
         this.performSetValueAction({ host, data, log, name });
       }
@@ -156,7 +159,7 @@ class HomebridgeAccessory {
     const { config } = this;
 
     service.getCharacteristic(characteristicType)
-      .on('set', this.setCharacteristicValue.bind(this, { propertyName, onData, offData, setValuePromise, ignorePreviousValue }))
+      .on('set', this.setCharacteristicValue.bind(this, { propertyName, onData, offData, setValuePromise, ignorePreviousValue, service, offCharacteristicType }))
       .on('get', this.getCharacteristicValue.bind(this, { propertyName, defaultValue, getValuePromise }));
 
       // If there's already a default loaded from persistent state then set the value
