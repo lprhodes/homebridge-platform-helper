@@ -91,7 +91,7 @@ class HomebridgeAccessory {
       if (this.isReloadingState && !resendDataAfterReload) {
         this.state[propertyName] = value;
 
-        log(`${name} set${capitalizedPropertyName}: already ${value}`);
+        log(`${name} set${capitalizedPropertyName}: already ${value} (no data sent)`);
 
         callback(null, value);
 
@@ -100,7 +100,7 @@ class HomebridgeAccessory {
 
       if (!ignorePreviousValue && this.state[propertyName] == value && !this.isReloadingState) {
         if (!allowResend) {
-          log(`${name} set${capitalizedPropertyName}: already ${value}`);
+          log(`${name} set${capitalizedPropertyName}: already ${value} (no data sent)`);
 
           callback(null, value);
 
