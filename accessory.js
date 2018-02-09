@@ -76,16 +76,22 @@ class HomebridgeAccessory {
   }
 
   performSetValueAction ({ host, data, log, name }) {
-    throw new Error('The "performSetValueAction" method must be overridden.')
+    throw new Error('The "performSetValueAction" method must be overridden.');
   }
 
   async setCharacteristicValue (props, value, callback) {    
     try {
       const { service, propertyName, onData, offData, setValuePromise, ignorePreviousValue } = props;
       const { config, host, log, name } = this; 
-      const { resendDataAfterReload, allowResend } = config;
+      const { delay, resendDataAfterReload, allowResend } = config;
 
       const capitalizedPropertyName = propertyName.charAt(0).toUpperCase() + propertyName.slice(1);
+
+      if (delay) {
+        log(`${name} set${capitalizedPropertyName}: ${value} (delaying by ${delay}s)`);
+
+        await delayForDuration(delay);
+      }
 
       log(`${name} set${capitalizedPropertyName}: ${value}`);
 
@@ -155,11 +161,11 @@ class HomebridgeAccessory {
     callback(null, value);
   }
 
-  createToggleCharacteristic ({ service, characteristicType, onData, offData, propertyName, getValuePromise, setValuePromise, defaultValue, ignorePreviousValue }) {
+  createToggleCharacteristic ({ service, characteristicType, onData, offData, propertyName, getValuePromise, setValuePromise, defaultValue, ignorePreviousValue, delay }) {
     const { config } = this;
 
     service.getCharacteristic(characteristicType)
-      .on('set', this.setCharacteristicValue.bind(this, { propertyName, onData, offData, setValuePromise, ignorePreviousValue, service }))
+      .on('set', this.setCharacteristicValue.bind(this, { propertyName, onData, offData, setValuePromise, ignorePreviousValue, service, delay }))
       .on('get', this.getCharacteristicValue.bind(this, { propertyName, defaultValue, getValuePromise }));
 
       // If there's already a default loaded from persistent state then set the value
@@ -194,3 +200,9 @@ class HomebridgeAccessory {
 }
 
 module.exports = HomebridgeAccessory;
+
+const delayForDuration = (duration) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, duration * 1000)
+  })
+}
