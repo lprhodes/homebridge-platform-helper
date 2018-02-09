@@ -159,7 +159,7 @@ class HomebridgeAccessory {
     const { config } = this;
 
     service.getCharacteristic(characteristicType)
-      .on('set', this.setCharacteristicValue.bind(this, { propertyName, onData, offData, setValuePromise, ignorePreviousValue, service, offCharacteristicType }))
+      .on('set', this.setCharacteristicValue.bind(this, { propertyName, onData, offData, setValuePromise, ignorePreviousValue, service }))
       .on('get', this.getCharacteristicValue.bind(this, { propertyName, defaultValue, getValuePromise }));
 
       // If there's already a default loaded from persistent state then set the value
