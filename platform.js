@@ -24,13 +24,13 @@ class HomebridgePlatform {
 
     const accessories = [];
 
+    this.addAccessories(accessories);
+
     // Check for no accessories
     if (!config.accessories || config.accessories.length === 0) {
-      log(`No accessories have been added to the "${name}" config.`);
+      log(`No accessories have been added to the "${name}" platform config.`);
       return callback(accessories);
     }
-
-    this.addAccessories(accessories);
 
     // Let accessories know about one-another if they wish
     accessories.forEach((accessory) => {
