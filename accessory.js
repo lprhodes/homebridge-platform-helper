@@ -18,7 +18,7 @@ const addSaveProxy = (name, target, saveFunc) => {
 class HomebridgeAccessory {
 
   constructor (log, config = {}) {
-    let { disableLogs, host, name, data, persistState } = config;
+    let { disableLogs, host, name, data, persistState, resendDataAfterReload } = config;
 
 
     this.log = !disableLogs ? log : () => {};
@@ -32,20 +32,26 @@ class HomebridgeAccessory {
     if (persistState === undefined) persistState = true;
 
     if (persistState) {
-      this.isReloadingState = true;
+      if (resendDataAfterReload) this.isReloadingState = true;
 
       const restoreStateOrder = this.restoreStateOrder();
-
       const state = persistentState.load({ host, name }) || {};
+
       this.correctReloadedState(state);
 
       this.state = addSaveProxy(name, state, (state) => {
         persistentState.save({ host, name, state });
       });
 
-      setTimeout(() => {
-        this.isReloadingState = false;
-      }, 2300);
+      if (resendDataAfterReload) {
+        setTimeout(() => {
+          this.isReloadingState = false;
+          
+          log(`${name} Accessory Ready`);
+        }, 2300);
+      } else {
+        log(`${name} Accessory Ready`);
+      }
     } else {
       this.state = {};
     }
@@ -171,11 +177,18 @@ class HomebridgeAccessory {
       // If there's already a default loaded from persistent state then set the value
       if (this.state[propertyName] !== undefined) {
         const value = this.state[propertyName]
-        this.state[propertyName] = undefined;
+        // this.state[propertyName] = undefined;
 
-        setTimeout(() => {
-          service.setCharacteristic(characteristicType, value);
-        }, 2000);
+        if (config.persistState) {
+          service.getCharacteristic(characteristicType).getValue();
+        }
+        
+
+        if (config.resendDataAfterReload) {
+          setTimeout(() => {
+            service.setCharacteristic(characteristicType, value);
+          }, 2000)
+        }
       }
   }
 
@@ -188,7 +201,7 @@ class HomebridgeAccessory {
       });
   }
 
-  getServices () {
+  getInformationServices () {
     const informationService = new Service.AccessoryInformation();
     informationService
       .setCharacteristic(Characteristic.Manufacturer, this.manufacturer || 'Homebridge Easy Platform')
