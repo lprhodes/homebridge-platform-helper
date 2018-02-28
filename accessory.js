@@ -121,7 +121,11 @@ class HomebridgeAccessory {
         }
       }
 
-      const previousValue = this.state[propertyName];
+      let previousValue = this.state[propertyName];
+      if (this.isReloadingState && resendDataAfterReload) {
+        previousValue = undefined
+      }
+
       this.state[propertyName] = value;
 
       // Set toggle data if this is a toggle
