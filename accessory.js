@@ -158,8 +158,11 @@ class HomebridgeAccessory {
 
       const characteristcType = serviceManager.characteristics[name];
 
-      // Refresh the UI for any state that's been set
-      if (persistState) serviceManager.refreshCharacteristicUI(characteristcType);
+      // Refresh the UI for any state that's been set once the init has completed
+      // Use timeout as we want to make sure this doesn't happen until after all child contructor code has run
+      setTimeout(() => {
+        if (persistState) serviceManager.refreshCharacteristicUI(characteristcType);
+      }, 200);
 
       // Re-set the value in order to resend
       if (resendDataAfterReload) {
