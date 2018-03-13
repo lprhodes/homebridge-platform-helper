@@ -20,15 +20,24 @@ class HomebridgePlatform {
 
   accessories (callback) {
     const { config, log } = this;
-    const { name } = config;
+    const { name, disableLogs } = config;
 
     const accessories = [];
 
     this.addAccessories(accessories);
 
+    // Disable logs if requested
+    if (disableLogs !== undefined) {
+      accessories.forEach((accessory) => {
+        if (accessory.config.disableLogs === undefined) {
+          accessory.disableLogs = disableLogs
+        }
+      })
+    }
+
     // Check for no accessories
     if (!config.accessories || config.accessories.length === 0) {
-      log(`No accessories have been added to the "${name}" platform config.`);
+      if (!disableLogs) log(`No accessories have been added to the "${name}" platform config.`);
       return callback(accessories);
     }
 
