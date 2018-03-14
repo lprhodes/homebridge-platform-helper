@@ -32,6 +32,7 @@ class HomebridgeAccessory {
 
     this.state = {}
 
+    this.checkConfig(config)
     this.setupServiceManager()
     this.loadState()
 
@@ -43,6 +44,30 @@ class HomebridgeAccessory {
   restoreStateOrder () { }
 
   correctReloadedState () { }
+
+  checkConfig (config) {
+    if (typeof config !== 'object') return;
+
+    Object.keys(config).forEach((key) => {
+      const value = config[key];
+      
+      if (value === 'true' || value === 'false') {
+        console.log(`\x1b[31m[CONFIG ERROR] \x1b[30mBoolean values should look like this: \x1b[32m"${key}": ${value}\x1b[30m not this \x1b[31m"${key}": "${value}"\x1b[30m`);
+
+        process.exit(0);
+      } else if (Array.isArray(value)) {
+        value.forEach((item) => {
+          checkConfig(item);
+        })
+      } else if (typeof value === 'object') {
+        checkConfig(value);
+      } else if (value === '0' || (typeof value === 'string' && parseInt(value) !== 0 && !isNaN(parseInt(value)))) {
+        console.log(`\x1b[31m[CONFIG ERROR] \x1b[30mNumeric values should look like this: \x1b[32m"${key}": ${value}\x1b[30m not this \x1b[31m"${key}": "${value}"\x1b[30m`);
+
+        process.exit(0);
+      }
+    })
+  }
 
   identify (callback) {
     const { name } = this
