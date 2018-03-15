@@ -62,6 +62,9 @@ class HomebridgeAccessory {
       } else if (typeof value === 'object') {
         checkConfig(value);
       } else if (value === '0' || (typeof value === 'string' && parseInt(value) !== 0 && !isNaN(parseInt(value)))) {
+
+        if (typeof value === 'string' && value.split('.').length - 1 > 1) return;
+
         console.log(`\x1b[31m[CONFIG ERROR] \x1b[30mNumeric values should look like this: \x1b[32m"${key}": ${value}\x1b[30m not this \x1b[31m"${key}": "${value}"\x1b[30m`);
 
         process.exit(0);
