@@ -57,10 +57,10 @@ class HomebridgeAccessory {
         process.exit(0);
       } else if (Array.isArray(value)) {
         value.forEach((item) => {
-          checkConfig(item);
+          this.checkConfig(item);
         })
-      } else if (typeof value === 'object') {
-        checkConfig(value);
+      } else if (typeof value === 'object' || key === 'data') {
+        this.checkConfig(value);
       } else if (value === '0' || (typeof value === 'string' && parseInt(value) !== 0 && !isNaN(parseInt(value)))) {
 
         if (typeof value === 'string' && value.split('.').length - 1 > 1) return;
