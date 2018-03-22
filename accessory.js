@@ -52,7 +52,7 @@ class HomebridgeAccessory {
       const value = config[key];
       
       if (value === 'true' || value === 'false') {
-        console.log(`\x1b[31m[CONFIG ERROR] \x1b[30mBoolean values should look like this: \x1b[32m"${key}": ${value}\x1b[30m not this \x1b[31m"${key}": "${value}"\x1b[30m`);
+        console.log(`\x1b[31m[CONFIG ERROR] \x1b[0mBoolean values should look like this: \x1b[32m"${key}": ${value}\x1b[0m not this \x1b[31m"${key}": "${value}"\x1b[0m`);
 
         process.exit(0);
       } else if (Array.isArray(value)) {
@@ -66,7 +66,7 @@ class HomebridgeAccessory {
         if (typeof value === 'string' && value.split('.').length - 1 > 1) return;
         if (typeof value === 'string' && !value.match(/^\d\.{0,1}\d*$/)) return;
 
-        console.log(`\x1b[31m[CONFIG ERROR] \x1b[30mNumeric values should look like this: \x1b[32m"${key}": ${value}\x1b[30m not this \x1b[31m"${key}": "${value}"\x1b[30m`);
+        console.log(`\x1b[31m[CONFIG ERROR] \x1b[0mNumeric values should look like this: \x1b[32m"${key}": ${value}\x1b[0m not this \x1b[31m"${key}": "${value}"\x1b[0m`);
 
         process.exit(0);
       }
@@ -86,7 +86,8 @@ class HomebridgeAccessory {
   }
 
   async setCharacteristicValue (props, value, callback) {   
-    const { config, host, log, name } = this; 
+    const { config, host, log, name, debug } = this; 
+
     try {
       const { delay, resendDataAfterReload, allowResend } = config;
       const { service, propertyName, onData, offData, setValuePromise, ignorePreviousValue } = props;
@@ -139,9 +140,8 @@ class HomebridgeAccessory {
 
       callback(null, this.state[propertyName]);
     } catch (err) {
-
-      throw err
-      log('setCharacteristicValue err', err)
+      log('setCharacteristicValue error:', err.message)
+      if (debug) log('\x1b[33m[DEBUG]\x1b[0m setCharacteristicValue error', err)
 
       callback(err)
     }
