@@ -1,10 +1,9 @@
 const path = require('path');
 const nodePersist = require('node-persist');
 
-const init = ({ homebridgeDirectory }) => {
+const init = ({ homebridgeDirectory, homebridge }) => {
   if (!homebridgeDirectory) {
-    homebridgeDirectory = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
-    homebridgeDirectory = path.join(homebridgeDirectory, ".homebridge");
+    homebridgeDirectory = homebridge.user.storagePath()
   }
 
   nodePersist.initSync({ dir: `${homebridgeDirectory}/plugin-persist/homebridge-broadlink-rm` });

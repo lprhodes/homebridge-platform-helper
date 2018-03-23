@@ -5,13 +5,14 @@ if (semver.lt(process.version, '7.6.0')) throw new Error(`Homebridge plugins tha
 
 class HomebridgePlatform {
 
-  constructor (log, config = {}) {
+  constructor (log, config = {}, homebridge) {
     this.log = log;
     this.config = config;
+    this.homebridge = homebridge;
 
     const { homebridgeDirectory } = config;
 
-    persistentState.init({ homebridgeDirectory });
+    persistentState.init({ homebridge, homebridgeDirectory });
   }
 
   addAccessories (accessories) {
