@@ -1,12 +1,12 @@
 const persistentState = require('./helpers/persistentState');
-const assert = require('assert')
+const assert = require('assert');
+const mqtt = require('mqtt');
 
 const addSaveProxy = (name, target, saveFunc) => {
   const handler = {
     set (target, key, value) {
       target[key] = value;
 
-      // console.log(`${name} save ${key} ${value}`, target)
       saveFunc(target);
 
       return true
@@ -37,6 +37,8 @@ class HomebridgeAccessory {
     this.loadState()
 
     this.setDefaults();
+
+    this.subscribeToMQTT();
   }
 
   setDefaults () { }
@@ -46,13 +48,14 @@ class HomebridgeAccessory {
   correctReloadedState () { }
 
   checkConfig (config) {
+    const { name } = this;
     if (typeof config !== 'object') return;
 
     Object.keys(config).forEach((key) => {
       const value = config[key];
       
       if (value === 'true' || value === 'false') {
-        console.log(`\x1b[31m[CONFIG ERROR] \x1b[0mBoolean values should look like this: \x1b[32m"${key}": ${value}\x1b[0m not this \x1b[31m"${key}": "${value}"\x1b[0m`);
+        log(`\x1b[31m[CONFIG ERROR]\x1b[0m ${name}Boolean values should look like this: \x1b[32m"${key}": ${value}\x1b[0m not this \x1b[31m"${key}": "${value}"\x1b[0m`);
 
         process.exit(0);
       } else if (Array.isArray(value)) {
@@ -66,7 +69,7 @@ class HomebridgeAccessory {
         if (typeof value === 'string' && value.split('.').length - 1 > 1) return;
         if (typeof value === 'string' && !value.match(/^\d\.{0,1}\d*$/)) return;
 
-        console.log(`\x1b[31m[CONFIG ERROR] \x1b[0mNumeric values should look like this: \x1b[32m"${key}": ${value}\x1b[0m not this \x1b[31m"${key}": "${value}"\x1b[0m`);
+        log(`\x1b[31m[CONFIG ERROR]\x1b[0m ${name}Numeric values should look like this: \x1b[32m"${key}": ${value}\x1b[0m not this \x1b[31m"${key}": "${value}"\x1b[0m`);
 
         process.exit(0);
       }
@@ -141,7 +144,7 @@ class HomebridgeAccessory {
       callback(null, this.state[propertyName]);
     } catch (err) {
       log('setCharacteristicValue error:', err.message)
-      if (debug) log('\x1b[33m[DEBUG]\x1b[0m setCharacteristicValue error', err)
+      if (debug) log(`\x1b[33m[DEBUG]\x1b[0m ${name} setCharacteristicValue error`, err)
 
       callback(err)
     }
@@ -228,13 +231,143 @@ class HomebridgeAccessory {
     return [ informationService ];
   }
 
-
   getServices () {
     const services = this.getInformationServices();
 
     services.push(this.serviceManager.service);
 
     return services;
+  }
+
+  // MQTT Support
+  subscribeToMQTT () {
+    const { config, log, name } = this;
+    let { mqttTopic, mqttURL, mqttUsername, mqttPassword } = config;
+
+    if (!mqttTopic || !mqttURL) return;
+
+    this.mqttValues = {};
+
+    // Perform some validation of the mqttTopic option in the config. 
+    if (typeof mqttTopic !== 'string' && !Array.isArray(mqttTopic)) {
+      log(`\x1b[31m[CONFIG ERROR]\x1b[0m ${name} \x1b[33mmqttTopic\x1b[0m value is incorrect. Please check out the documentation for more details.`)
+    
+      return;
+    }
+
+    if (Array.isArray(mqttTopic)) {
+      const erroneousTopics = mqttTopic.filter((mqttTopicObj) => {
+        if (typeof mqttTopic !== 'obj') return true;
+
+        const { identifier, topic } = mqttTopicObj;
+
+        if (!identifier || !topic) return true;
+        if (typeof identifier !== 'string') return true;
+        if (typeof topic !== 'string') return true;
+      });
+
+      if (erroneousTopics.length > 0) {
+        log(`\x1b[31m[CONFIG ERROR]\x1b[0m ${name} \x1b[33mmqttTopic\x1b[0m value is incorrect. Please check out the documentation for more details.`)
+        
+        return;
+      }
+    }
+
+    // mqqtTopic may be an array or an array of objects. Add to a new array if string.
+    if (typeof mqttTopic === 'string') {
+      const mqttTopicObj = {
+        identifier: 'unknown',
+        topic: mqttTopic
+      }
+      
+      mqttTopic = [ mqttTopicObj ]
+    }
+
+    // Create an easily referenced instance variable
+    const mqttTopicIdentifiersByTopic = {};
+    mqttTopic.forEach(({ identifier, topic }) => {
+      mqttTopicIdentifiersByTopic[topic] = identifier;
+    })
+
+    // Connect to mqtt
+    const mqttClientID = 'mqttjs_' + Math.random().toString(16).substr(2, 8);
+    const options = {
+      keepalive: 10,
+      clientId: this.client_Id,
+      protocolId: 'MQTT',
+      protocolVersion: 4,
+      clean: true,
+      reconnectPeriod: 1000,
+      connectTimeout: 30 * 1000,
+      serialnumber: mqttClientID,
+      username: mqttUsername,
+      password: mqttPassword,
+      will: {
+        topic: 'WillMsg',
+        payload: 'Connection Closed abnormally..!',
+        qos: 0,
+        retain: false
+      },
+      rejectUnauthorized: false
+    };
+
+    const mqttClient = mqtt.connect(mqttURL, options);
+    this.mqttClient = mqttClient;
+    
+    // Subscribe to topics
+    this.isMQTTConnecting = true;
+
+    // Timeout isMQTTConnecting - it's used to prevent error messages about not being connected.
+    setTimeout(() => {
+      this.isMQTTConnecting = false;
+    }, 2000)
+
+    mqttClient.on('connect', () => {
+      this.isMQTTConnecting = false;
+
+      log(`\x1b[35m[INFO]\x1b[0m ${name} MQTT client connected.`)
+
+      mqttTopic.forEach(({ topic }) => {
+        mqttClient.subscribe(topic)
+      })
+    })
+
+    mqttClient.on('error', () => {
+      this.isMQTTConnecting = false;
+    })
+ 
+    mqttClient.on('message', (topic, message) => {
+      const identifier = mqttTopicIdentifiersByTopic[topic];
+
+      this.onMQTTMessage(identifier, message);
+    })
+  }
+
+  onMQTTMessage (identifier, message) {
+    this.mqttValues[identifier] = message.toString();
+  }
+
+  mqttValueForIdentifier (identifier) {
+    const { log, name } = this;
+
+    let value = this.mqttValues[identifier];
+
+    // No identifier may have been set in the user's config so let's try "unknown" too
+    if (value === undefined) value = this.mqttValues['unknown'];
+
+    if (!this.mqttClient.connected) {
+      if (!this.isMQTTConnecting) log(`\x1b[31m[ERROR]\x1b[0m ${name} MQTT client is not connected. Value could not be found for topic with identifier "${identifier}".`);
+
+      return;
+    }
+
+    if (value === undefined) {
+      log(`\x1b[31m[ERROR]\x1b[0m ${name} No MQTT value could be found for topic with identifier "${identifier}".`);
+
+      return;
+    }
+
+    return value;
   }
 }
 
