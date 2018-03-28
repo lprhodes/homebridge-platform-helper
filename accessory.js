@@ -247,7 +247,8 @@ class HomebridgeAccessory {
     if (!mqttTopic || !mqttURL) return;
 
     this.mqttValues = {};
-
+    this.mqttValuesTemp = {};
+    
     // Perform some validation of the mqttTopic option in the config. 
     if (typeof mqttTopic !== 'string' && !Array.isArray(mqttTopic)) {
       log(`\x1b[31m[CONFIG ERROR]\x1b[0m ${name} \x1b[33mmqttTopic\x1b[0m value is incorrect. Please check out the documentation for more details.`)
@@ -344,7 +345,7 @@ class HomebridgeAccessory {
   }
 
   onMQTTMessage (identifier, message) {
-    this.mqttValues[identifier] = message.toString();
+    this.mqttValuesTemp[identifier] = message.toString();
   }
 
   mqttValueForIdentifier (identifier) {
