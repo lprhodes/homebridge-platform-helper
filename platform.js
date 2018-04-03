@@ -15,7 +15,7 @@ class HomebridgePlatform {
     persistentState.init({ homebridge, homebridgeDirectory });
   }
 
-  addAccessories (accessories) {
+  async addAccessories (accessories) {
     throw new Error('The addAccessories method must be overridden.')
   };
 
@@ -25,7 +25,7 @@ class HomebridgePlatform {
 
     const accessories = [];
 
-    this.addAccessories(accessories);
+    await this.addAccessories(accessories);
 
     // Disable logs if requested
     if (disableLogs !== undefined) {
