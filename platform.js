@@ -19,7 +19,7 @@ class HomebridgePlatform {
     throw new Error('The addAccessories method must be overridden.')
   };
 
-  accessories (callback) {
+  async accessories (callback) {
     const { config, log } = this;
     const { name, disableLogs } = config;
 
