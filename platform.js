@@ -1,7 +1,7 @@
 const persistentState = require('./helpers/persistentState')
 const semver = require('semver');
 
-if (semver.lt(process.version, '7.6.0')) throw new Error(`Homebridge plugins that use the "homebridge-easy-platform" library require your node version to be at least v7.6.0. Current version: ${process.version}`)
+if (semver.lt(process.version, '12.14.0')) throw new Error(`Homebridge plugins that use the "homebridge-easy-platform" library require your node version to be at least the v12.14.0 LTM. Current version: ${process.version}`)
 
 class HomebridgePlatform {
 
