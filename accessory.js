@@ -1,5 +1,4 @@
 const persistentState = require('./helpers/persistentState');
-const assert = require('assert');
 const mqtt = require('mqtt');
 
 const addSaveProxy = (name, target, saveFunc) => {
@@ -48,7 +47,7 @@ class HomebridgeAccessory {
   correctReloadedState () { }
 
   checkConfig (config) {
-    const { name } = this;
+    const { name, log } = this;
     if (typeof config !== 'object') return;
 
     Object.keys(config).forEach((key) => {
