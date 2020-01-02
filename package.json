@@ -1,6 +1,6 @@
 {
   "name": "homebridge-platform-helper",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Platform and Accessory helper library for homebridge: https://github.com/nfarina/homebridge",
   "license": "ISC",
   "keywords": [
@@ -10,7 +10,7 @@
     "accessory"
   ],
   "engines": {
-    "node": ">=12.14.0",
+    "node": ">=7.6.0",
     "homebridge": ">=0.4.50"
   },
   "author": {
