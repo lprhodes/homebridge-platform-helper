@@ -1,9 +1,10 @@
 import { LogFunction, SaveStateFunction, AccessoryState } from "./typings"
-import { Characteristic, Service, ServiceManager } from 'homebridge'
 import { AccessoryConfig, ConfigData, MQTTObject} from "./typings/config"
+import { Characteristic, Service } from "hap-nodejs"
 
 import { persistentState, delayForDuration } from './helpers'
 import * as mqtt from 'mqtt'
+import ServiceManager from "./serviceManager"
 
 interface PerformSetValueAction {
   host: string
@@ -249,12 +250,12 @@ class HomebridgeAccessory {
     Object.keys(serviceManager.characteristics).forEach((name) => {
       if (this.state[name] === undefined) return
 
-      const characteristcType = serviceManager.characteristics[name]
+      const characteristicType = serviceManager.characteristics[name]
 
       // Refresh the UI for any state that's been set once the init has completed
       // Use timeout as we want to make sure this doesn't happen until after all child contructor code has run
       setTimeout(() => {
-        if (persistState) serviceManager.refreshCharacteristicUI(characteristcType)
+        if (persistState) serviceManager.refreshCharacteristicUI(characteristicType)
       }, 200)
 
       // Re-set the value in order to resend
@@ -264,7 +265,7 @@ class HomebridgeAccessory {
         setTimeout(() => {
           const value = this.state[name]
 
-          serviceManager.setCharacteristic(characteristcType, value)
+          serviceManager.setCharacteristic(characteristicType, value)
         }, (resendDataAfterReloadDelay * 1000))
       }
     })
@@ -282,7 +283,7 @@ class HomebridgeAccessory {
     }
   }
 
-  getInformationServices(): Service[] {
+  getInformationServices(): HAPNodeJS.Service[] {
     const informationService = Service.AccessoryInformation()
     informationService
       .setCharacteristic(Characteristic.Manufacturer, this.manufacturer || 'Homebridge Easy Platform')

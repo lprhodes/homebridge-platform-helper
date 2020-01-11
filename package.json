@@ -1,14 +1,21 @@
 {
   "name": "homebridge-platform-helper",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Platform and Accessory helper library for homebridge: https://github.com/nfarina/homebridge",
   "license": "ISC",
+  "scripts": {
+    "lint": "tslint --project tsconfig.json",
+    "build": "tsc",
+    "test": "jest"
+  },
   "keywords": [
     "homebridge-platform-helper",
     "homebridge",
     "platform",
     "accessory"
   ],
+  "main": "dist/index",
+  "type": "index",
   "engines": {
     "node": ">=7.6.0",
     "homebridge": ">=0.4.50"
@@ -22,8 +29,33 @@
   },
   "dependencies": {
     "mqtt": "^3.0.0",
-    "node-persist": "^2.0.10",
+    "node-persist": "^2.1.0",
     "semver": "^7.1.1",
     "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "homebridge": "0.4.50",
+    "@types/jest": "^24.0.25",
+    "@types/node": "^13.1.4",
+    "@types/q": "^1.5.2",
+    "@types/semver": "^6.2.0",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.2.0",
+    "tslint": "^5.12.0",
+    "typescript": "^3.2.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }
