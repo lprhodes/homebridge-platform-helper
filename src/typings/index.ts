@@ -13,11 +13,16 @@ export declare class HomebridgePlatformHelper {
     accessories(callback: AccessoriesCallback): Promise<void>
 }
 
-export type ServiceType = new (name: string) => HAPNodeJS.Service
+export type Characteristics = {[key: string]: HAPNodeJS.Characteristic}
 
 export declare class ServiceManager {
 
-    constructor(name: string, serviceType: ServiceType, log: LogFunction)
+    name: string
+    log: LogFunction
+    service: HAPNodeJS.Service
+    characteristics: Characteristics
+
+    constructor(name: string, serviceType: HAPNodeJS.PredefinedService, log: LogFunction)
 
     getCharacteristic(characteristic: HAPNodeJS.Characteristic): HAPNodeJS.Characteristic
     setCharacteristic(characteristic: HAPNodeJS.Characteristic, value: any): void
@@ -32,6 +37,8 @@ export declare class ServiceManager {
     addNameCharacteristic(): void
     getName(callback: GetNameCallback): void
 }
+
+export type ServiceManagerType = new () => ServiceManager
 
 export type AccessoryState = {[key: string]: any}
 

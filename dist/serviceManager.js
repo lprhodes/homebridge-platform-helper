@@ -12,15 +12,15 @@ class ServiceManager {
         assert_1.default(log, 'ServiceManager requires "log" to be provided.');
         this.name = name;
         this.log = log;
-        this.service = new serviceType(name);
+        this.service = new serviceType(name, "");
         this.characteristics = {};
         this.addNameCharacteristic();
     }
-    setCharacteristic(characteristic, value) {
-        this.service.setCharacteristic(characteristic, value);
-    }
     getCharacteristic(characteristic) {
         return this.service.getCharacteristic(characteristic);
+    }
+    setCharacteristic(characteristic, value) {
+        this.service.setCharacteristic(characteristic, value);
     }
     refreshCharacteristicUI(characteristic) {
         this.getCharacteristic(characteristic).getValue();
@@ -65,8 +65,8 @@ class ServiceManager {
         });
     }
     getName(callback) {
-        const { name } = this;
-        this.log(`${name} getName: ${name}`);
+        const { log, name } = this;
+        log(`${name} getName: ${name}`);
         callback(null, name);
     }
 }

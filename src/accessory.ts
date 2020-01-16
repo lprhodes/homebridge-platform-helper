@@ -1,6 +1,7 @@
 import { LogFunction, SaveStateFunction, AccessoryState } from "./typings"
 import { AccessoryConfig, ConfigData, MQTTObject} from "./typings/config"
 import { Characteristic, Service } from "hap-nodejs"
+import uuid from 'uuid'
 
 import { persistentState, delayForDuration } from './helpers'
 import * as mqtt from 'mqtt'
@@ -49,7 +50,6 @@ class HomebridgeAccessory {
 
   public config: AccessoryConfig
   public state: AccessoryState
-  public serviceManagerType: string
 
   public host: string
   public name: string
@@ -60,7 +60,7 @@ class HomebridgeAccessory {
 
   public manufacturer?: string
   public model?: string
-  public serialNumber?: string
+  public serialNumber: string = uuid.v4();
 
   public mqttClient?: mqtt.MqttClient
   public mqttValues?: {[key: string]: any}
@@ -69,9 +69,7 @@ class HomebridgeAccessory {
 
   private isReloadingState: boolean = false
 
-  constructor (log: LogFunction, config: AccessoryConfig, serviceManagerType: string = 'ServiceManager') {
-    this.serviceManagerType = serviceManagerType
-
+  constructor (log: LogFunction, config: AccessoryConfig) {
     let { disableLogs, host, name, data } = config
 
     this.log = (!disableLogs && log) ? log : () => {}
@@ -84,7 +82,8 @@ class HomebridgeAccessory {
     this.state = {}
 
     this.checkConfig(config)
-    this.serviceManager = this.setupServiceManager()
+    this.serviceManager = this.createServiceManager()
+    this.configureServiceManager(this.serviceManager)
     
     this.loadState()
 
@@ -93,19 +92,29 @@ class HomebridgeAccessory {
     this.subscribeToMQTT()
   }
 
-  setupServiceManager(): ServiceManager {
-    throw new Error('The "performSetValueAction" method must be overridden.')
+  serviceType (): HAPNodeJS.PredefinedService {
+    throw new Error('The "serviceType" method must be overridden.')
   }
 
-  setDefaults() { }
+  private createServiceManager(): ServiceManager {
+    const { log, name, serviceType } = this
 
-  restoreStateOrder() { }
+    return new ServiceManager(name, serviceType(), log);
+  }
 
-  correctReloadedState(_state: AccessoryState) { }
+  public configureServiceManager(serviceManager: ServiceManager): ServiceManager {
+    throw new Error('The "configureServiceManager" method must be overridden.')
+  }
+
+  public setDefaults() { }
+
+  public restoreStateOrder() { }
+
+  public correctReloadedState(_state: AccessoryState) { }
   
-  updateAccessories(accessories: HomebridgeAccessory[]) { }
+  public updateAccessories(accessories: HomebridgeAccessory[]) { }
 
-  checkConfig(config: AccessoryConfig) {
+  private checkConfig(config: AccessoryConfig) {
     const { name, log } = this
     if (typeof config !== 'object') return
 
@@ -137,7 +146,7 @@ class HomebridgeAccessory {
     })
   }
 
-  identify(callback: Function) {
+  public identify(callback: Function) {
     const { name } = this
 
     this.log(`Identify requested for ${name}`)
@@ -145,11 +154,11 @@ class HomebridgeAccessory {
     callback()
   }
 
-  performSetValueAction(args: PerformSetValueAction) {
+  public performSetValueAction(args: PerformSetValueAction) {
     throw new Error('The "performSetValueAction" method must be overridden.')
   }
 
-  async setCharacteristicValue (props: SetCharacteristicValueProps, value: any, callback: SetCharacteristicValueCallback) {   
+  public async setCharacteristicValue (props: SetCharacteristicValueProps, value: any, callback: SetCharacteristicValueCallback) {   
     const { config, host, log, name, debug } = this 
 
     try {
@@ -212,7 +221,7 @@ class HomebridgeAccessory {
     }
   }
 
-  async getCharacteristicValue(props: GetCharacteristicValueProps, callback: GetCharacteristicValueCallback) {
+  public async getCharacteristicValue(props: GetCharacteristicValueProps, callback: GetCharacteristicValueCallback) {
     const { propertyName } = props
     const { log, name } = this
 
@@ -224,7 +233,7 @@ class HomebridgeAccessory {
     callback(null, value)
   }
 
-  loadState() {
+  private loadState() {
     const { config, log, name, serviceManager } = this
     let { host, resendDataAfterReload, resendDataAfterReloadDelay, persistState } = config
 
@@ -283,8 +292,8 @@ class HomebridgeAccessory {
     }
   }
 
-  getInformationServices(): HAPNodeJS.Service[] {
-    const informationService = Service.AccessoryInformation()
+  public getInformationServices(): HAPNodeJS.Service[] {
+    const informationService = new Service.AccessoryInformation()
     informationService
       .setCharacteristic(Characteristic.Manufacturer, this.manufacturer || 'Homebridge Easy Platform')
       .setCharacteristic(Characteristic.Model, this.model || 'Unknown')
@@ -294,7 +303,7 @@ class HomebridgeAccessory {
   }
 
   getServices() {
-    const services = this.getInformationServices()
+    const services = []
 
     services.push(this.serviceManager.service)
 
@@ -302,7 +311,7 @@ class HomebridgeAccessory {
   }
 
   // MQTT Support
-  subscribeToMQTT() {
+  private subscribeToMQTT() {
     const { config, log, name } = this
     let { mqttTopic, mqttURL, mqttUsername, mqttPassword } = config
 
@@ -409,11 +418,11 @@ class HomebridgeAccessory {
     })
   }
 
-  onMQTTMessage (identifier: string, message: Buffer) {
+  private onMQTTMessage (identifier: string, message: Buffer) {
     if (this.mqttValuesTemp) this.mqttValuesTemp[identifier] = message.toString()
   }
 
-  mqttValueForIdentifier (identifier: string) {
+  public mqttValueForIdentifier (identifier: string) {
     let { log, mqttClient, mqttValues, name } = this
 
     mqttValues = mqttValues || {}

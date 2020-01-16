@@ -1,16 +1,15 @@
 import { Characteristic } from "hap-nodejs"
-import { LogFunction, GetNameCallback, AddCharacteristicArgs, GetSetCharacteristicArgs, AddToggleCharacteristicArgs, ServiceType } from "./typings"
+import { LogFunction, GetNameCallback, AddCharacteristicArgs, GetSetCharacteristicArgs, AddToggleCharacteristicArgs, Characteristics } from "./typings"
 import assert from 'assert'
 
 class ServiceManager {
 
-  name: string
-  log: LogFunction
-  service: HAPNodeJS.Service
-  characteristics: {[key: string]: HAPNodeJS.Characteristic}
+  private name: string
+  private log: LogFunction
+  public service: HAPNodeJS.Service
+  public characteristics: Characteristics
 
-  constructor(
-    name: string, serviceType: ServiceType, log: LogFunction) {
+  constructor(name: string, serviceType: HAPNodeJS.PredefinedService, log: LogFunction) {
     assert(name, 'ServiceManager requires a "name" to be provided.')
     assert(serviceType, 'ServiceManager requires the "type" to be provided.')
     assert(log, 'ServiceManager requires "log" to be provided.')
@@ -18,27 +17,28 @@ class ServiceManager {
     this.name = name
     this.log = log
     
-    this.service = new serviceType(name);
+    this.service = new serviceType(name, "") as HAPNodeJS.Service
+
     this.characteristics = {}
 
     this.addNameCharacteristic()
   }
 
-  getCharacteristic(characteristic: HAPNodeJS.Characteristic): HAPNodeJS.Characteristic {
+  public getCharacteristic(characteristic: HAPNodeJS.Characteristic): HAPNodeJS.Characteristic {
     return this.service.getCharacteristic(characteristic)
   }
 
-  setCharacteristic(characteristic: HAPNodeJS.Characteristic, value: any): void {    
+  public setCharacteristic(characteristic: HAPNodeJS.Characteristic, value: any): void {    
     this.service.setCharacteristic(characteristic, value);
   }
 
-  refreshCharacteristicUI(characteristic: HAPNodeJS.Characteristic): void {
+  public refreshCharacteristicUI(characteristic: HAPNodeJS.Characteristic): void {
     this.getCharacteristic(characteristic).getValue();
   }
 
   // Convenience
 
-  addCharacteristic(args: AddCharacteristicArgs): void {
+  private addCharacteristic(args: AddCharacteristicArgs): void {
     const { name, type, getSet, method, bind, props } = args
     this.characteristics[name] = type
 
@@ -54,30 +54,30 @@ class ServiceManager {
     }
   }
 
-  addGetCharacteristic(args: GetSetCharacteristicArgs): void {
+  public addGetCharacteristic(args: GetSetCharacteristicArgs): void {
     const { name, type, method, bind, props } = args
     this.addCharacteristic({ name, type, getSet: 'get', method, bind, props })
   }
 
-  addSetCharacteristic(args: GetSetCharacteristicArgs): void {
+  public addSetCharacteristic(args: GetSetCharacteristicArgs): void {
     const { name, type, method, bind, props } = args
     this.addCharacteristic({ name, type, getSet: 'set', method, bind, props })
   }
 
-  addToggleCharacteristic(args: AddToggleCharacteristicArgs): void {
+  public addToggleCharacteristic(args: AddToggleCharacteristicArgs): void {
     const { name, type, getMethod, setMethod, bind, props } = args
     
     this.addGetCharacteristic({ name, type, method: getMethod, bind, props }) 
     this.addSetCharacteristic({ name, type, method: setMethod, bind, props }) 
   }
 
-  getCharacteristicTypeForName(name: string): HAPNodeJS.Characteristic {
+  public getCharacteristicTypeForName(name: string): HAPNodeJS.Characteristic {
     return this.characteristics[name]
   }
 
   // Name Characteristic
 
-  addNameCharacteristic(): void {
+  public addNameCharacteristic(): void {
     this.addCharacteristic({
       name: 'name',
       getSet: 'get',
@@ -86,7 +86,7 @@ class ServiceManager {
     });
   }
 
-  getName(callback: GetNameCallback): void {
+  public getName(callback: GetNameCallback): void {
     const { log, name } = this
 
     log(`${name} getName: ${name}`);

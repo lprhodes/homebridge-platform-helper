@@ -15,7 +15,6 @@ class HomebridgePlatform {
     constructor(log, config, homebridge) {
         this.log = log;
         this.config = config;
-        this.homebridge = homebridge;
         const { homebridgeDirectory } = config;
         helpers_1.persistentState.init({ homebridge, homebridgeDirectory });
     }

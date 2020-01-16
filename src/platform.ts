@@ -10,25 +10,23 @@ if (semver.lt(process.version, '7.6.0')) throw new Error(`Homebridge plugins tha
 
 class HomebridgePlatform {
 
-  public log: LogFunction
-  public config: ConfigData
-  public homebridge: Homebridge
+  private log: LogFunction
+  private config: ConfigData
 
   constructor (log: LogFunction, config: ConfigData, homebridge: Homebridge) {
     this.log = log
     this.config = config
-    this.homebridge = homebridge
 
     const { homebridgeDirectory } = config
 
     persistentState.init({ homebridge, homebridgeDirectory })
   }
 
-  async addAccessories(_accessories: HomebridgeAccessory[]): Promise<void> {
+  public async addAccessories(_accessories: HomebridgeAccessory[]): Promise<void> {
     throw new Error('The addAccessories method must be overridden.')
   }
 
-  async accessories(callback: AccessoriesCallback) {
+  public async accessories(callback: AccessoriesCallback) {
     const { config, log } = this
     const { name, disableLogs } = config
 

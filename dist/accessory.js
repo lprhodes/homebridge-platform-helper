@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -8,8 +11,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const hap_nodejs_1 = require("hap-nodejs");
+const uuid_1 = __importDefault(require("uuid"));
 const helpers_1 = require("./helpers");
 const mqtt = __importStar(require("mqtt"));
+const serviceManager_1 = __importDefault(require("./serviceManager"));
 const addSaveProxy = (target, saveFunc) => {
     const handler = {
         set(target, key, value) {
@@ -21,11 +26,11 @@ const addSaveProxy = (target, saveFunc) => {
     return new Proxy(target, handler);
 };
 class HomebridgeAccessory {
-    constructor(log, config, serviceManagerType = 'ServiceManager') {
+    constructor(log, config) {
         this.debug = false;
+        this.serialNumber = uuid_1.default.v4();
         this.isMQTTConnecting = false;
         this.isReloadingState = false;
-        this.serviceManagerType = serviceManagerType;
         let { disableLogs, host, name, data } = config;
         this.log = (!disableLogs && log) ? log : () => { };
         this.config = config;
@@ -34,13 +39,21 @@ class HomebridgeAccessory {
         this.data = data;
         this.state = {};
         this.checkConfig(config);
-        this.serviceManager = this.setupServiceManager();
+        this.serviceManager = this.createServiceManager();
+        this.configureServiceManager(this.serviceManager);
         this.loadState();
         this.setDefaults();
         this.subscribeToMQTT();
     }
-    setupServiceManager() {
-        throw new Error('The "performSetValueAction" method must be overridden.');
+    serviceType() {
+        throw new Error('The "serviceType" method must be overridden.');
+    }
+    createServiceManager() {
+        const { log, name, serviceType } = this;
+        return new serviceManager_1.default(name, serviceType(), log);
+    }
+    configureServiceManager(serviceManager) {
+        throw new Error('The "configureServiceManager" method must be overridden.');
     }
     setDefaults() { }
     restoreStateOrder() { }
@@ -189,7 +202,7 @@ class HomebridgeAccessory {
         }
     }
     getInformationServices() {
-        const informationService = hap_nodejs_1.Service.AccessoryInformation();
+        const informationService = new hap_nodejs_1.Service.AccessoryInformation();
         informationService
             .setCharacteristic(hap_nodejs_1.Characteristic.Manufacturer, this.manufacturer || 'Homebridge Easy Platform')
             .setCharacteristic(hap_nodejs_1.Characteristic.Model, this.model || 'Unknown')
@@ -197,7 +210,7 @@ class HomebridgeAccessory {
         return [informationService];
     }
     getServices() {
-        const services = this.getInformationServices();
+        const services = [];
         services.push(this.serviceManager.service);
         return services;
     }

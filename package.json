@@ -28,17 +28,18 @@
     "url": "git@github.com:lprhodes/homebridge-platform-helper.git"
   },
   "dependencies": {
+    "@types/uuid": "^3.4.6",
     "mqtt": "^3.0.0",
     "node-persist": "^2.1.0",
     "semver": "^7.1.1",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
-    "homebridge": "0.4.50",
     "@types/jest": "^24.0.25",
     "@types/node": "^13.1.4",
     "@types/q": "^1.5.2",
     "@types/semver": "^6.2.0",
+    "homebridge": "0.4.50",
     "jest": "^24.9.0",
     "ts-jest": "^24.2.0",
     "tslint": "^5.12.0",

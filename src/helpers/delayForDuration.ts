@@ -1,4 +1,4 @@
-const delayForDuration = (duration: number) => {
+const delayForDuration = (duration: number): Promise<void>  => {
     return new Promise((resolve) => {
       setTimeout(resolve, duration * 1000)
     })

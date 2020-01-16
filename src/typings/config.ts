@@ -17,6 +17,7 @@ export interface PluginConfig {
 }
 
 export interface AccessoryConfig {
+    serviceType: HAPNodeJS.PredefinedService
     host: string
     name: string
     data: ConfigData
