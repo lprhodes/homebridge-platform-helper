@@ -1,0 +1,1 @@
+{"version":3,"file":"delayForDuration.js","sourceRoot":"","sources":["../../src/helpers/delayForDuration.ts"],"names":[],"mappings":";;AAAA,MAAM,gBAAgB,GAAG,CAAC,QAAgB,EAAkB,EAAE;IAC1D,OAAO,IAAI,OAAO,CAAC,CAAC,OAAO,EAAE,EAAE;QAC7B,UAAU,CAAC,OAAO,EAAE,QAAQ,GAAG,IAAI,CAAC,CAAA;IACtC,CAAC,CAAC,CAAA;AACJ,CAAC,CAAA;AAED,kBAAe,gBAAgB,CAAA"}
