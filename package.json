@@ -1,6 +1,6 @@
 {
-  "name": "homebridge-platform-helper",
-  "version": "1.2.1",
+  "name": "homebridge-platform-helper-kc",
+  "version": "1.1.1",
   "description": "Platform and Accessory helper library for homebridge: https://github.com/nfarina/homebridge",
   "license": "ISC",
   "keywords": [
@@ -14,16 +14,16 @@
     "homebridge": ">=0.4.50"
   },
   "author": {
-    "name": "lprhodes"
+    "name": "kiwi-cam"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:lprhodes/homebridge-platform-helper.git"
+    "url": "git@github.com:kiwi-cam/homebridge-platform-helper.git"
   },
   "dependencies": {
-    "mqtt": "^3.0.0",
-    "node-persist": "^2.0.10",
-    "semver": "^7.1.1",
-    "uuid": "^3.3.3"
+    "mqtt": "^4.2.6",
+    "node-persist": "^2.1.0",
+    "semver": "^7.3.4",
+    "uuid": "^8.3.2"
   }
 }

@@ -257,7 +257,7 @@ class HomebridgeAccessory {
 
     if (Array.isArray(mqttTopic)) {
       const erroneousTopics = mqttTopic.filter((mqttTopicObj) => {
-        if (typeof mqttTopic !== 'obj') return true;
+        if (typeof mqttTopic !== 'object') return true;
 
         const { identifier, topic } = mqttTopicObj;
 
