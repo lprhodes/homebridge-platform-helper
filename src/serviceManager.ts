@@ -49,7 +49,7 @@ class ServiceManager {
       assert(bind, 'A value for `bind` is required if you are setting `props`')
       this.getCharacteristic(type).on(getSet, method.bind(bind, props));
     } else {
-      const boundMethod = bind ? method.bind(bind) : method
+      const boundMethod = bind ? method.bind(bind) : method.bind(this)
       this.getCharacteristic(type).on(getSet, boundMethod);
     }
   }
