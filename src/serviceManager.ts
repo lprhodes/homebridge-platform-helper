@@ -15,7 +15,7 @@ class ServiceManager {
     assert(log, 'ServiceManager requires "log" to be provided.')
     
     this.name = name
-    this.log = log
+    this.log = log ?? (() => { })
     
     this.service = new serviceType(name, "") as HAPNodeJS.Service
 
