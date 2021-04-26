@@ -89,9 +89,9 @@ class ServiceManager {
   public getName(callback: GetNameCallback): void {
     const { log, name } = this
 
-    log(`${name} getName: ${name}`);
+    if(log) log(`${name} getName: ${name}`);
 
-    callback(null, name);
+    callback(null, name ?? '');
   }
 }
 
