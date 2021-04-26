@@ -15,7 +15,7 @@ class ServiceManager {
     assert(log, 'ServiceManager requires "log" to be provided.')
     
     this.name = name
-    this.log = log ?? (() => { })
+    this.log = log
     
     this.service = new serviceType(name, "") as HAPNodeJS.Service
 
@@ -89,9 +89,9 @@ class ServiceManager {
   public getName(callback: GetNameCallback): void {
     const { log, name } = this
 
-    log(`${name} getName: ${name}`);
+    if(log) log(`${name} getName: ${name}`);
 
-    callback(null, name);
+    callback(null, name ?? 'undefined');
   }
 }
 
