@@ -91,7 +91,7 @@ class ServiceManager {
 
     if(log) log(`${name} getName: ${name}`);
 
-    callback(null, name ?? 'undefined');
+    callback(null, name ?? '');
   }
 }
 
